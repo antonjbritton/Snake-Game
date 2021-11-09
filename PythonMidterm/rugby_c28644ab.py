@@ -1,13 +1,17 @@
 import argparse, os
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input_file')
-parser.add_argument('output_file')
+parser.add_argument('input_file_path')
+parser.add_argument('output_file_path')
 
 args = parser.parse_args()
 
-if os.path.exists(args.input_file):
-    with open(args.input_file) as file:
+for inputFile in os.listdir(args.input_file_path):
+    inputFilePath = os.path.join(args.input_file_path, inputFile)
+    outputFile = inputFile[:-4] + "_c28644ab.txt"
+    outputFilePath = os.path.join(args.output_file_path, outputFile)
+
+    with open(inputFilePath) as file:
         fileText = str(file.readlines())
 
     teamScores = list(fileText.strip("[]'\\n"))
@@ -38,6 +42,7 @@ if os.path.exists(args.input_file):
 
         count += 3
 
+    print(inputFile + ":")
     if team1Score > team2Score:
         print("Team 1 is the winner!")
     elif team1Score < team2Score:
@@ -45,5 +50,5 @@ if os.path.exists(args.input_file):
     else:
         print("It's a draw!")
 
-    with open(args.output_file, "w") as file:
+    with open(outputFilePath, "w") as file:
         file.write(str(team1Score) + ":" + str(team2Score))
