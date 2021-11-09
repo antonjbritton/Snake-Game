@@ -111,15 +111,21 @@ def morse_code_translator(character):
         return "$"
     elif character == "/":
         return " "
+    elif character == ".-.-.-.-.-.-.-.-.-":
+        return "..."
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input_file')
-parser.add_argument('output_file')
+parser.add_argument('input_file_path')
+parser.add_argument('output_file_path')
 
 args = parser.parse_args()
 
-if os.path.exists(args.input_file):
-    with open(args.input_file) as file:
+for inputFile in os.listdir(args.input_file_path):
+    inputFilePath = os.path.join(args.input_file_path, inputFile)
+    outputFile = inputFile[:-4] + "_c28644ab.txt"
+    outputFilePath = os.path.join(args.output_file_path, outputFile)
+
+    with open(inputFilePath) as file:
         fileText = str(file.readlines())
 
     fileText = fileText.strip("[]'\\n")
@@ -128,7 +134,7 @@ if os.path.exists(args.input_file):
     cipherText = fileText[1]
 
     if algorithm == "Hex":
-        plainText = bytes.fromhex(cipherText).decode("utf-8").lower()
+        plainText = bytes.fromhex(cipherText).decode("utf-8")
     elif algorithm == "Caesar Cipher(+3)":
         plainText = ""
         ciphertextPosition = 0
@@ -148,6 +154,7 @@ if os.path.exists(args.input_file):
             translatedChar = morse_code_translator(character)
             plainText = plainText + translatedChar
 
-    print(plainText)
-    with open(args.output_file, "w") as file:
-        file.write(plainText)
+    plainTextLower = plainText.lower()
+
+    with open(outputFilePath, "w") as file:
+        file.write(plainTextLower)
