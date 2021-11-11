@@ -21,7 +21,7 @@ def mainMenu(): #This functions acts as the main menu of my game
     choice = input("Enter a number between 1 and 4: ")
 # depending on which number the user inputs (1-4) they will be redirected to another part of my program
     if choice == "1":
-        newGame()
+        chooseDifficulty()
     elif choice == "2":
         print("Option 2")
     elif choice == "3":
@@ -39,13 +39,37 @@ def mainMenu(): #This functions acts as the main menu of my game
 #I have validated the user input and made use of recursion to ensure that if the user does not enter a
 #valid input, this process will be repeated until they do
 
-def newGame():
-    global window, canvas, snake, snakeSize, score, scoreText, direction
+def chooseDifficulty(): #This function allows the user to set the difficulty of their game
+    print("\nPlease choose one of the following difficulties:")
+    print("1.Easy")
+    print("2.Medium")
+    print("3.Hard")
+    difficultyChoice = input("Enter a number between 1 and 3: ")
+    if difficultyChoice == "1" or difficultyChoice == "2" or difficultyChoice == "3":
+        newGame(difficultyChoice)
+#Calls the "newGame" function and passes the "difficultyChoice" variable so that the function knows which difficulty the user chose
+    else:
+        print("That is not a valid choice. Try again.")
+        chooseDifficulty()
+#I have validated the user input and made use of recursion to ensure that if the user does not enter a
+#valid input, this process will be repeated until they do
+
+def newGame(difficulty):
+    global window, canvas, snake, snakeSize, snakeSpeed, score, scoreText, direction
     window = setWindowDimensions(width, height)
     canvas = Canvas(window, bg="black", width=width, height=height)
 
+    if difficulty == "1":
+        snakeSize = 100
+        snakeSpeed = 150
+    elif difficulty == "2":
+        snakeSize = 80
+        snakeSpeed = 100
+    elif difficulty == "3":
+        snakeSize = 40
+        snakeSpeed = 50
+
     snake = []
-    snakeSize = 30
     snake.append(canvas.create_rectangle(snakeSize,snakeSize, snakeSize * 2, snakeSize * 2, fill="white"))
     score = 0
     txt = "Score: " + str(score)
@@ -187,7 +211,7 @@ def moveSnake(): #This function is used to move the snake
     for i in range(len(snake) - 1):
         canvas.coords(snake[i+1],positions[i][0],positions[i][1],positions[i][2],positions[i][3])
     if 'gameOver' not in locals():
-        window.after(90, moveSnake)
+        window.after(snakeSpeed, moveSnake)
 #Calls the moveSnake function every 90 milliseconds within the main loop
 
 width = 1366
