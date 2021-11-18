@@ -1,5 +1,5 @@
 #Resolution: 1366x768
-from tkinter import Tk, Canvas
+from tkinter import Tk, Canvas, PhotoImage, Label
 import random
 
 def fileReader(): #This function is used to read the player names and scores from a text file
@@ -62,18 +62,22 @@ def newGame(difficulty):
     if difficulty == "1":
         snakeSize = 100
         snakeSpeed = 150
+        background = PhotoImage(file="background1.png")#source: https://pixabay.com/illustrations/forest-trees-fog-silhouette-mist-5855196/
     elif difficulty == "2":
         snakeSize = 80
         snakeSpeed = 100
+        background = PhotoImage(file="background2.png")#source: https://pixabay.com/vectors/mountains-panorama-forest-mountain-1412683/
     elif difficulty == "3":
         snakeSize = 40
         snakeSpeed = 50
+        background = PhotoImage(file="background3.png")#source: https://pixabay.com/illustrations/trees-lake-forest-river-sky-beach-6207925/
 
+    canvas.create_image(width/2,height/2, image=background)
     snake = []
     snake.append(canvas.create_rectangle(snakeSize,snakeSize, snakeSize * 2, snakeSize * 2, fill="white"))
     score = 0
     txt = "Score: " + str(score)
-    scoreText = canvas.create_text( width/2 , 15 , fill="white" , font="Times 20 italic bold", text=txt)
+    scoreText = canvas.create_text( width/2 , 40 , fill="white" , font="Times 40 italic bold", text=txt)
 
     canvas.bind("<Left>", leftKey) #binds the left arrow key to the "leftKey" function
     canvas.bind("<Right>", rightKey) #binds the right arrow key to the "rightKey" function
