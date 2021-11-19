@@ -1,6 +1,6 @@
 #Resolution: 1366x768
 from tkinter import Tk, Canvas, PhotoImage, Label
-import random
+from random import randint
 
 def fileReader(): #This function is used to read the player names and scores from a text file
     playerScores = list()
@@ -74,7 +74,7 @@ def newGame(difficulty):
 
     canvas.create_image(width/2,height/2, image=background)
     snake = []
-    snake.append(canvas.create_rectangle(snakeSize,snakeSize, snakeSize * 2, snakeSize * 2, fill="white"))
+    snake.append(canvas.create_rectangle(snakeSize,snakeSize, snakeSize * 2, snakeSize * 2, fill="green"))
     score = 0
     txt = "Score: " + str(score)
     scoreText = canvas.create_text( width/2 , 40 , fill="white" , font="Times 40 italic bold", text=txt)
@@ -87,7 +87,7 @@ def newGame(difficulty):
 
     direction = "right"
 
-    placeFood()
+    placeBlueFood()
     moveSnake()
 
     window.mainloop() #updates the window screen
@@ -110,12 +110,14 @@ def viewLeaderboard(): #This function allows the user to view the leaderboard
         count += 1
 #I have used a for loop to display the data of each user in a leaderboard structure
 
-def placeFood(): #This function places "food" on the canvas
-    global food, foodX, foodY #allows us to make changes to global variables "food", "foodX" and "foodY"
-    food = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="steel blue" )
-    foodX = random.randint(0, width - snakeSize) #generates a random x coordinate where the food will be placed
-    foodY = random.randint(0, height - snakeSize) #generates a random y coordinate where the food will be placed
-    canvas.move(food, foodX, foodY) #places the food on the canvas in the coordinates that were generated
+def placeBlueFood(): #This function places "food" on the canvas
+    global blueFood, blueFoodX, blueFoodY, points #allows us to make changes to global variables "blueFood", "blueFoodX" and "blueFoodY"
+    blueFood = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="blue")
+    print(canvas.itemcget(blueFood, "fill"))
+    blueFoodX = randint(0, width - snakeSize) #generates a random x coordinate where the food will be placed
+    blueFoodY = randint(0, height - snakeSize) #generates a random y coordinate where the food will be placed
+    canvas.move(blueFood, blueFoodX, blueFoodY) #places the food on the canvas in the coordinates that were generated
+    points = 10
 
 def leftKey(event): #This function is called when the user presses the key associated with moving left
     global direction #allows us to make changes to global variable "direction"
@@ -147,7 +149,7 @@ def setWindowDimensions(w,h): #This function sets the dimensions of the window
 def growSnake(): #This function is used to grow the snake
     lastElement = len(snake) - 1
     lastElementPos = canvas.coords(snake[lastElement])
-    snake.append(canvas.create_rectangle(0, 0, snakeSize, snakeSize, fill="#FDF3F3")) #adds a new square to the snake
+    snake.append(canvas.create_rectangle(0, 0, snakeSize, snakeSize, fill="light green")) #adds a new square to the snake
     if direction == "left":
         canvas.coords(snake[lastElement+1], lastElementPos[0]+snakeSize, lastElementPos[1], lastElementPos[2]+snakeSize, lastElementPos[3])
     elif (direction == "right"):
@@ -157,18 +159,26 @@ def growSnake(): #This function is used to grow the snake
     else:
         canvas.coords(snake[lastElement+1], lastElementPos[0], lastElementPos[1]-snakeSize, lastElementPos[2], lastElementPos[3]-snakeSize)
 #These selection statements move the snake on the canvas when different directions have been selected
-    global score #allows us to make changes to global variable "score"
-    score += 10
+    global score, points, newPoints #allows us to make changes to global variable "score"
+    score += points
+    points = newPoints
     txt = "Score: " + str(score)
     canvas.itemconfigure(scoreText, text=txt) #updates the text on the canvas
 
-def moveFood(): #This function moves "food" after the snake "eats" one
-    global food, foodX, foodY
-    canvas.move(food, (foodX*(-1)), (foodY*(-1))) #clears the "food" that is currently on the canvas
-    foodX = random.randint(0, width - snakeSize)
-    foodY = random.randint(0, height - snakeSize)
-    canvas.move(food, foodX, foodY)
-#Works in a similar way to the "placeFood" function
+def moveBlueFood(): #This function moves "food" after the snake "eats" one
+    global blueFood, blueFoodX, blueFoodY, newPoints
+    canvas.delete(blueFood) #clears the "food" that is currently on the canvas
+    foodOption = randint(1, 10)
+    if foodOption == 1:
+        blueFood = canvas.create_oval(0,0, snakeSize, snakeSize, fill="yellow")
+        newPoints = 30
+    else:
+        blueFood = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="blue")
+        newPoints = 10
+    blueFoodX = randint(0, width - snakeSize)
+    blueFoodY = randint(0, height - snakeSize)
+    canvas.move(blueFood, blueFoodX, blueFoodY)
+#Works in a similar way to the "placeBlueFood" function
 
 def overlapping(a,b): #This function is used to check if the snake is overlapping with something
     if a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]:
@@ -201,14 +211,14 @@ def moveSnake(): #This function is used to move the snake
     elif direction == "down":
         canvas.move(snake[0], 0, snakeSize) #moves the snake down
     snakeHeadPos = canvas.coords(snake[0])
-    foodPos = canvas.coords(food)
-    if overlapping(snakeHeadPos, foodPos): #checks if the snake has collided with a food object
-        moveFood()
+    blueFoodPos = canvas.coords(blueFood)
+    if overlapping(snakeHeadPos, blueFoodPos): #checks if the snake has collided with a food object
+        moveBlueFood()
         growSnake()
     for i in range(1,len(snake)):
         if overlapping(snakeHeadPos, canvas. coords(snake[i])): #checks if the snake has collided with itself
             gameOver = True
-            canvas.create_text(width/2,height/2,fill="white",font="TImes 20 italic bold", text="Game Over!")
+            canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Game Over!")
 #gameOver is set to true and a message is outputted to the screen telling the user "Game Over!"
     for i in range(1,len(snake)):
         positions.append(canvas.coords(snake[i]))
@@ -216,7 +226,7 @@ def moveSnake(): #This function is used to move the snake
         canvas.coords(snake[i+1],positions[i][0],positions[i][1],positions[i][2],positions[i][3])
     if 'gameOver' not in locals():
         window.after(snakeSpeed, moveSnake)
-#Calls the moveSnake function every 90 milliseconds within the main loop
+#Calls the moveSnake function within the main loop
 
 width = 1366
 height = 768
