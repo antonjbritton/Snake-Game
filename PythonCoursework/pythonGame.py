@@ -1,5 +1,5 @@
 #Resolution: 1366x768
-from tkinter import Tk, Canvas, PhotoImage, Label
+from tkinter import Tk, Canvas, PhotoImage, Label, Button
 from random import randint
 
 def fileReader(): #This function is used to read the player names and scores from a text file
@@ -55,9 +55,10 @@ def chooseDifficulty(): #This function allows the user to set the difficulty of 
 #valid input, this process will be repeated until they do
 
 def newGame(difficulty):
-    global window, canvas, snake, snakeSize, snakeSpeed, score, scoreText, direction
+    global window, canvas, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused
     window = setWindowDimensions(width, height)
     canvas = Canvas(window, bg="black", width=width, height=height)
+    paused = False
 
     if difficulty == "1":
         snakeSize = 100
@@ -83,6 +84,7 @@ def newGame(difficulty):
     canvas.bind("<Right>", rightKey) #binds the right arrow key to the "rightKey" function
     canvas.bind("<Up>", upKey) #binds the up arrow key to the "upKey" function
     canvas.bind("<Down>", downKey) #binds the down arrow key to the "downKey" function
+    canvas.bind("<space>", pause) #binds the space bar to the "pause" function
     canvas.focus_set()
 
     direction = "right"
@@ -134,6 +136,18 @@ def upKey(event): #This function is called when the user presses the key associa
 def downKey(event): #This function is called when the user presses the key associated with moving down
     global direction #allows us to make changes to global variable "direction"
     direction = "down" #sets the direction of the snake to "down"
+
+def pause(event):
+    global paused, pauseText
+    if paused == False:
+        paused = True
+        pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume")
+    else:
+        paused = False
+        canvas.delete(pauseText)
+        moveSnake()
+#This function allows the user to pause and unpause the game
+
 
 def setWindowDimensions(w,h): #This function sets the dimensions of the window
     window = Tk()
@@ -224,7 +238,7 @@ def moveSnake(): #This function is used to move the snake
         positions.append(canvas.coords(snake[i]))
     for i in range(len(snake) - 1):
         canvas.coords(snake[i+1],positions[i][0],positions[i][1],positions[i][2],positions[i][3])
-    if 'gameOver' not in locals():
+    if 'gameOver' not in locals() and paused == False:
         window.after(snakeSpeed, moveSnake)
 #Calls the moveSnake function within the main loop
 
