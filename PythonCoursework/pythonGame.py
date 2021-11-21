@@ -17,9 +17,10 @@ def mainMenu(): #This functions acts as the main menu of my game
     print("1.New Game")
     print("2.Load Game")
     print("3.Leaderboard")
-    print("4.Quit")
-    choice = input("Enter a number between 1 and 4: ")
-# depending on which number the user inputs (1-4) they will be redirected to another part of my program
+    print("4.Customise Controls")
+    print("5.Quit")
+    choice = input("Enter a number between 1 and 5: ")
+# depending on which number the user inputs (1-5) they will be redirected to another part of my program
     if choice == "1":
         chooseDifficulty()
     elif choice == "2":
@@ -32,6 +33,8 @@ def mainMenu(): #This functions acts as the main menu of my game
 #I have added validation for this option because if the "playerScores" list is empty then the user
 #will not be able to view the leaderboard
     elif choice == "4":
+        customiseControls()
+    elif choice == "5":
         exit()
     else:
         print("That is not a valid choice. Try again.")
@@ -80,6 +83,14 @@ def newGame(difficulty):
     txt = "Score: " + str(score)
     scoreText = canvas.create_text( width/2 , 40 , fill="white" , font="Times 40 italic bold", text=txt)
 
+    if "leftChoice" in globals():
+        canvas.bind(leftChoice, leftKey)
+        canvas.bind(rightChoice, rightKey)
+        canvas.bind(upChoice, upKey)
+        canvas.bind(downChoice, downKey)
+#This block of code checks whether the user has defined custom controls. If they have, then the keys that they
+#chose are binded to the corresponding direction function
+
     canvas.bind("<Left>", leftKey) #binds the left arrow key to the "leftKey" function
     canvas.bind("<Right>", rightKey) #binds the right arrow key to the "rightKey" function
     canvas.bind("<Up>", upKey) #binds the up arrow key to the "upKey" function
@@ -112,6 +123,28 @@ def viewLeaderboard(): #This function allows the user to view the leaderboard
         count += 1
 #I have used a for loop to display the data of each user in a leaderboard structure
 
+def customiseControls():
+    global leftChoice, rightChoice, upChoice, downChoice
+    currentChoices = []
+    possibleChoices = "abcdefghijklmnopqrstuvwxyz"
+    print("\nThe default controls for this game are the arrow keys")
+    print("Please choose a secondary key (letter) for each direction")
+    leftChoice = input("Enter the key you will use to turn left: ")
+    while (leftChoice in currentChoices) or (len(leftChoice) > 1) or (leftChoice not in possibleChoices):
+        leftChoice = input("That is not a valid entry. Please try again: ")
+    currentChoices.append(leftChoice)
+    rightChoice = input("Enter the key you will use to turn right: ")
+    while (rightChoice in currentChoices) or (len(rightChoice) > 1) or (rightChoice not in possibleChoices):
+        rightChoice = input("That is not a valid entry. Please try again: ")
+    currentChoices.append(rightChoice)
+    upChoice = input("Enter the key you will use to go up: ")
+    while (upChoice in currentChoices) or (len(upChoice) > 1) or (upChoice not in possibleChoices):
+        upChoice = input("That is not a valid entry. Please try again: ")
+    currentChoices.append(upChoice)
+    downChoice = input("Enter the key you will use to go down: ")
+    while (downChoice in currentChoices) or (len(downChoice) > 1) or (downChoice not in possibleChoices):
+        downChoice = input("That is not a valid entry. Please try again: ")
+
 def placeBlueFood(): #This function places "food" on the canvas
     global blueFood, blueFoodX, blueFoodY, points #allows us to make changes to global variables "blueFood", "blueFoodX" and "blueFoodY"
     blueFood = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="blue")
@@ -141,12 +174,24 @@ def pause(event):
     global paused, pauseText
     if paused == False:
         paused = True
-        pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume")
+        pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
+        canvas.bind("<Return>",save)
+        canvas.bind("<BackSpace>",quit)
     else:
         paused = False
         canvas.delete(pauseText)
+        canvas.unbind("<Return>")
+        canvas.unbind("<BackSpace>")
         moveSnake()
 #This function allows the user to pause and unpause the game
+
+def save(event):
+    print(1)
+#This function allows the user to save their current game
+
+def quit(event):
+    window.destroy()
+#This function allows the user to quit the game
 
 
 def setWindowDimensions(w,h): #This function sets the dimensions of the window
@@ -232,7 +277,8 @@ def moveSnake(): #This function is used to move the snake
     for i in range(1,len(snake)):
         if overlapping(snakeHeadPos, canvas. coords(snake[i])): #checks if the snake has collided with itself
             gameOver = True
-            canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Game Over!")
+            canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Game Over! Press backspace to quit.")
+            canvas.bind("<BackSpace>",quit)
 #gameOver is set to true and a message is outputted to the screen telling the user "Game Over!"
     for i in range(1,len(snake)):
         positions.append(canvas.coords(snake[i]))
