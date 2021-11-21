@@ -58,7 +58,7 @@ def chooseDifficulty(): #This function allows the user to set the difficulty of 
 #valid input, this process will be repeated until they do
 
 def newGame(difficulty):
-    global window, canvas, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused
+    global window, canvas, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused, multiplier
     window = setWindowDimensions(width, height)
     canvas = Canvas(window, bg="black", width=width, height=height)
     paused = False
@@ -95,10 +95,14 @@ def newGame(difficulty):
     canvas.bind("<Right>", rightKey) #binds the right arrow key to the "rightKey" function
     canvas.bind("<Up>", upKey) #binds the up arrow key to the "upKey" function
     canvas.bind("<Down>", downKey) #binds the down arrow key to the "downKey" function
+    canvas.bind("123", shrinkCheat) #binds the key combination "123" to the skrinkCheat function
+    canvas.bind("456", growCheat) #binds the key combination "456" to the growCheat function
+    canvas.bind("789", doublePointsCheat) #binds the key combination "789" to the doublePointsCheat function
     canvas.bind("<space>", pause) #binds the space bar to the "pause" function
     canvas.focus_set()
 
     direction = "right"
+    multiplier = 1
 
     placeBlueFood()
     moveSnake()
@@ -170,20 +174,49 @@ def downKey(event): #This function is called when the user presses the key assoc
     global direction #allows us to make changes to global variable "direction"
     direction = "down" #sets the direction of the snake to "down"
 
+def shrinkCheat(event): #This function is used to shrink the snake on command
+    global snake #allows us to make changes to global variable "snake"
+    if len(snake) > 1:
+        canvas.delete(snake[len(snake) - 1])
+        snake.pop()
+        print("\nShrink cheat activated!")
+#Shrinks the snake and outputs a relevant message to the command line
+    else:
+        print("\nThe snake is too small to shrink!")
+#The purpose of the selection statement is to ensure that the snake's head is not deleted
+
+def growCheat(event): #This function is used to grow the snake on command
+    global snake #allows us to make changes to global variable "snake"
+    snake.append(canvas.create_rectangle(0, 0, snakeSize, snakeSize, fill="light green"))
+    print("\nGrow cheat activated!")
+#Grows the snake and outputs a relevant message to the command line
+
+def doublePointsCheat(event): #This function is used to toggle double points on command
+    global multiplier #allows us to make changes to global variable "multiplier"
+    if multiplier == 1:
+        multiplier = 2
+        print("\nDouble points activated!")
+#If double points is turned off then it will be turned on and the user will be informed of this via a message outputted to the terminal
+    else:
+        multiplier = 1
+        print("\nDouble points deactivated!")
+#If double points is turned on then it will be turned off and the user will be informed of this via a message outputted to the terminal
+
 def pause(event):
-    global paused, pauseText
+    global paused, pauseText #allows us to make changes to global variables "paused" and "pauseText"
     if paused == False:
         paused = True
         pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
         canvas.bind("<Return>",save)
         canvas.bind("<BackSpace>",quit)
+#This block of code is used to "pause" the game
     else:
         paused = False
         canvas.delete(pauseText)
         canvas.unbind("<Return>")
         canvas.unbind("<BackSpace>")
         moveSnake()
-#This function allows the user to pause and unpause the game
+#This block of code is used to "unpause" the game
 
 def save(event):
     print(1)
@@ -219,7 +252,7 @@ def growSnake(): #This function is used to grow the snake
         canvas.coords(snake[lastElement+1], lastElementPos[0], lastElementPos[1]-snakeSize, lastElementPos[2], lastElementPos[3]-snakeSize)
 #These selection statements move the snake on the canvas when different directions have been selected
     global score, points, newPoints #allows us to make changes to global variable "score"
-    score += points
+    score += (points * multiplier)
     points = newPoints
     txt = "Score: " + str(score)
     canvas.itemconfigure(scoreText, text=txt) #updates the text on the canvas
