@@ -2,11 +2,11 @@
 from tkinter import Tk, Canvas, PhotoImage, Label, Button
 from random import randint
 
-def fileReader(): #This function is used to read the player names and scores from a text file
+def fileReader(textFile): #This function is used to read the player names and scores from a text file
     playerScores = list()
-    with open("scores.txt") as file:
+    with open(textFile) as file:
         playerScores = file.readlines()
-    playerScores = [line.rstrip("\n") for line in open("scores.txt")]
+    playerScores = [line.rstrip("\n") for line in open(textFile)]
     file.close()
     return playerScores
 #The file is opened and its contents are stored in the "playerScores" list. The empty lines are then
@@ -30,12 +30,7 @@ def mainMenu(): #This functions acts as the main menu of my game
     elif choice == "2":
         loadGame()
     elif choice == "3":
-        if len(playerScores) > 0:
-            viewLeaderboard()
-        else:
-            print("\nNo player data to display.")
-#I have added validation for this option because if the "playerScores" list is empty then the user
-#will not be able to view the leaderboard
+        chooseLeaderboard()
     elif choice == "4":
         customiseControls()
     elif choice == "5":
@@ -131,23 +126,68 @@ def newGame(difficulty, savedLength=0, savedScore=0):
 
     window.mainloop() #updates the window screen
 
-def viewLeaderboard(): #This function allows the user to view the leaderboard
-    for i in range(0, len(playerScores), 2):
-        for j in range(0, len(playerScores) - 2, 2):
-            if playerScores[j + 1] < playerScores[j + 3]:
-                swapUsername = playerScores[j]
-                playerScores[j] = playerScores[j + 2]
-                playerScores[j + 2] = swapUsername
-                swapScore = playerScores[j + 1]
-                playerScores[j + 1] = playerScores[j + 3]
-                playerScores[j + 3] = swapScore
+def chooseLeaderboard():
+    print("\nPlease choose a game mode to view the history of: ")
+    print("1.Easy")
+    print("2.Medium")
+    print("3.Hard")
+    leaderboardChoice = input("Enter a number between 1 and 3: ")
+    if leaderboardChoice == "1":
+        viewLeaderboard(fileReader("easyScores.txt"))
+    elif leaderboardChoice == "2":
+        viewLeaderboard(fileReader("mediumScores.txt"))
+    elif leaderboardChoice == "3":
+        viewLeaderboard(fileReader("hardScores.txt"))
+    else:
+        print("That is not a valid choice. Try again.")
+        chooseLeaderboard()
+
+def viewLeaderboard(playerScores): #This function allows the user to view the leaderboard
+    if len(playerScores) > 0:
+        for i in range(0, len(playerScores), 2):
+            for j in range(0, len(playerScores) - 2, 2):
+                if playerScores[j + 1] < playerScores[j + 3]:
+                    swapUsername = playerScores[j]
+                    playerScores[j] = playerScores[j + 2]
+                    playerScores[j + 2] = swapUsername
+                    swapScore = playerScores[j + 1]
+                    playerScores[j + 1] = playerScores[j + 3]
+                    playerScores[j + 3] = swapScore
 #I have utilised a bubble sort in order to sort the player data so that it can be represented in a leaderboard
-    print("\nLeaderboard:")
-    count = 1
-    for i in range(0, len(playerScores), 2):
-        print(str(count) + "." + playerScores[i] + " - " + playerScores[i + 1] + "points")
-        count += 1
+        print("\nLeaderboard:")
+        count = 1
+        for i in range(0, len(playerScores), 2):
+            print(str(count) + "." + playerScores[i] + " - " + playerScores[i + 1] + "points")
+            count += 1
 #I have used a for loop to display the data of each user in a leaderboard structure
+    else:
+        print("\nNo player data to display.")
+#I have added validation for this option because if the "playerScores" list is empty then the user
+#will not be able to view the leaderboard
+
+def updateLeaderboard():
+    leaderboardFileData = list()
+    if currentDifficulty == "1":
+        leaderboardFile = "easyScores.txt"
+    elif currentDifficulty == "2":
+        leaderboardFile = "mediumScores.txt"
+    elif currentDifficulty == "3":
+        leaderboardFile = "hardScores.txt"
+    with open(leaderboardFile) as file:
+        leaderboardFileData = file.readlines()
+    leaderboardFileData = [line.rstrip("\n") for line in open(leaderboardFile)]
+    file.close()
+    for index in range(len(leaderboardFileData)):
+        if leaderboardFileData[index] == player:
+            if int(leaderboardFileData[index + 1]) < score:
+                leaderboardFileData[index + 1] = score
+            found = True
+    if "found" not in locals():
+        leaderboardFileData.append(player)
+        leaderboardFileData.append(score)
+    with open (leaderboardFile, "w") as file:
+        for item in leaderboardFileData:
+            file.write("%s\n" % item)
 
 def customiseControls():
     global leftChoice, rightChoice, upChoice, downChoice
@@ -358,6 +398,7 @@ def moveSnake(): #This function is used to move the snake
     for i in range(1,len(snake)):
         if overlapping(snakeHeadPos, canvas. coords(snake[i])): #checks if the snake has collided with itself
             gameOver = True
+            updateLeaderboard()
             canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Game Over! Press backspace to quit.")
             canvas.bind("<BackSpace>",quit)
 #gameOver is set to true and a message is outputted to the screen telling the user "Game Over!"
@@ -373,6 +414,5 @@ width = 1366
 height = 768
 
 while True:
-    playerScores = fileReader()
     mainMenu()
 #This block of code will ensure that the program loops until the user decides to exit
