@@ -160,19 +160,23 @@ def placeBlueFood(): #This function places "food" on the canvas
 
 def leftKey(event): #This function is called when the user presses the key associated with moving left
     global direction #allows us to make changes to global variable "direction"
-    direction = "left" #sets the direction of the snake to "left"
+    if direction != "right": #ensures that the direction is not equal to "right" so that changing the direction will not cause the snake to collide with itself
+        direction = "left" #sets the direction of the snake to "left"
 
 def rightKey(event): #This function is called when the user presses the key associated with moving right
     global direction #allows us to make changes to global variable "direction"
-    direction = "right" #sets the direction of the snake to "right"
+    if direction != "left": #ensures that the direction is not equal to "left" so that changing the direction will not cause the snake to collide with itself
+        direction = "right" #sets the direction of the snake to "right"
 
 def upKey(event): #This function is called when the user presses the key associated with moving up
     global direction #allows us to make changes to global variable "direction"
-    direction = "up" #sets the direction of the snake to "up"
+    if direction != "down": #ensures that the direction is not equal to "down" so that changing the direction will not cause the snake to collide with itself
+        direction = "up" #sets the direction of the snake to "up"
 
 def downKey(event): #This function is called when the user presses the key associated with moving down
     global direction #allows us to make changes to global variable "direction"
-    direction = "down" #sets the direction of the snake to "down"
+    if direction != "up": #ensures that the direction is not equal to "up" so that changing the direction will not cause the snake to collide with itself
+        direction = "down" #sets the direction of the snake to "down"
 
 def shrinkCheat(event): #This function is used to shrink the snake on command
     global snake #allows us to make changes to global variable "snake"
