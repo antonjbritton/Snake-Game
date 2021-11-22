@@ -22,9 +22,13 @@ def mainMenu(): #This functions acts as the main menu of my game
     choice = input("Enter a number between 1 and 5: ")
 # depending on which number the user inputs (1-5) they will be redirected to another part of my program
     if choice == "1":
+        global player
+        player = input("\nPlease enter your player name: ")
+        while player == "":
+            player = input("\nInvalid entry. Please try again: ")
         chooseDifficulty()
     elif choice == "2":
-        print("Option 2")
+        loadGame()
     elif choice == "3":
         if len(playerScores) > 0:
             viewLeaderboard()
@@ -57,8 +61,23 @@ def chooseDifficulty(): #This function allows the user to set the difficulty of 
 #I have validated the user input and made use of recursion to ensure that if the user does not enter a
 #valid input, this process will be repeated until they do
 
-def newGame(difficulty):
-    global window, canvas, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused, multiplier
+def loadGame():
+    global player
+    player = input("\nEnter your username to load your save file: ")
+    saveFileData = list()
+    with open("saveFile.txt") as file:
+        saveFileData = file.readlines()
+    saveFileData = [line.rstrip("\n") for line in open("saveFile.txt")]
+    file.close()
+    for index in range(len(saveFileData)):
+        if saveFileData[index] == player:
+            found = True
+            newGame(str(saveFileData[index+1]),int(saveFileData[index+2]),int(saveFileData[index+3]))
+    if "found" not in locals():
+        print("\nThere does not appear to be a save file for that player")
+
+def newGame(difficulty, savedLength=0, savedScore=0):
+    global window, canvas, currentDifficulty, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused, multiplier
     window = setWindowDimensions(width, height)
     canvas = Canvas(window, bg="black", width=width, height=height)
     paused = False
@@ -75,11 +94,14 @@ def newGame(difficulty):
         snakeSize = 40
         snakeSpeed = 50
         background = PhotoImage(file="background3.png")#source: https://pixabay.com/illustrations/trees-lake-forest-river-sky-beach-6207925/
+    currentDifficulty = difficulty
 
     canvas.create_image(width/2,height/2, image=background)
     snake = []
     snake.append(canvas.create_rectangle(snakeSize,snakeSize, snakeSize * 2, snakeSize * 2, fill="green"))
-    score = 0
+    for i in range(savedLength - 1):
+        snake.append(canvas.create_rectangle(0, 0, snakeSize, snakeSize, fill="light green"))
+    score = savedScore
     txt = "Score: " + str(score)
     scoreText = canvas.create_text( width/2 , 40 , fill="white" , font="Times 40 italic bold", text=txt)
 
@@ -223,8 +245,30 @@ def pause(event):
 #This block of code is used to "unpause" the game
 
 def save(event):
-    print(1)
-#This function allows the user to save their current game
+    saveFileData = list()
+    with open("saveFile.txt") as file:
+        saveFileData = file.readlines()
+    saveFileData = [line.rstrip("\n") for line in open("saveFile.txt")]
+    file.close()
+#This block of code stores the values in the save file to a list
+    for index in range(len(saveFileData)):
+        if saveFileData[index] == player:
+            saveFileData[index + 1] = currentDifficulty
+            saveFileData[index + 2] = len(snake)
+            saveFileData[index + 3] = score
+            found = True
+#This block of code goes through each item in the list and checks them to determine whether the player has
+#already saved a game. If the player has saved a game before, then this game is overwritten by the new one
+    if "found" not in locals():
+        saveFileData.append(player)
+        saveFileData.append(currentDifficulty)
+        saveFileData.append(len(snake))
+        saveFileData.append(score)
+#If the player has not saved a game before, then their game details are appended to the list
+    with open ("saveFile.txt", "w") as file:
+        for item in saveFileData:
+            file.write("%s\n" % item)
+#The saveFileData list is written to the save file
 
 def quit(event):
     window.destroy()
