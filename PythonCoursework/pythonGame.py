@@ -116,6 +116,7 @@ def newGame(difficulty, savedLength=0, savedScore=0):
     canvas.bind("456", growCheat) #binds the key combination "456" to the growCheat function
     canvas.bind("789", doublePointsCheat) #binds the key combination "789" to the doublePointsCheat function
     canvas.bind("<space>", pause) #binds the space bar to the "pause" function
+    canvas.bind("<Escape>", bossKey) #binds the escape key to the "bossKey" function
     canvas.focus_set()
 
     direction = "right"
@@ -314,6 +315,14 @@ def quit(event):
     window.destroy()
 #This function allows the user to quit the game
 
+def bossKey(event):
+    global paused, pauseText #allows us to make changes to global variables "paused" and "pauseText"
+    if paused == False:
+        paused = True
+        pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
+        canvas.bind("<Return>",save)
+        canvas.bind("<BackSpace>",quit)
+    window.wm_state("iconic")
 
 def setWindowDimensions(w,h): #This function sets the dimensions of the window
     window = Tk()
