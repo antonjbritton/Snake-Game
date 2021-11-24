@@ -72,10 +72,11 @@ def loadGame():
         print("\nThere does not appear to be a save file for that player")
 
 def newGame(difficulty, savedLength=0, savedScore=0):
-    global window, canvas, currentDifficulty, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused, multiplier
+    global window, canvas, currentDifficulty, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused, hidden, multiplier
     window = setWindowDimensions(width, height)
     canvas = Canvas(window, bg="black", width=width, height=height)
     paused = False
+    hidden = False
 
     if difficulty == "1":
         snakeSize = 100
@@ -322,13 +323,26 @@ def quit(event):
 #This function allows the user to quit the game
 
 def bossKey(event):
-    global paused, pauseText #allows us to make changes to global variables "paused" and "pauseText"
-    if paused == False:
+    global paused, pauseText, hidden, hideScreen, hideScreenText #allows us to make changes to global variables "paused", "pauseText", "hidden", "hideScreen" and "hideScreenText"
+    if hidden == False:
+        if paused == False:
+            paused = True
+            pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
+        hideScreen = canvas.create_rectangle(0,0,width,height,fill="white")
+        hideScreenText = canvas.create_text(width/2,height/2,fill="black",font="Times 40 italic bold",text="Loading...")
+        window.title("")
+        window.update()
+        hidden = True
         paused = True
-        pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
+    else:
+        canvas.delete(hideScreen)
+        canvas.delete(hideScreenText)
+        window.title("Snake Game")
         canvas.bind("<Return>",save)
         canvas.bind("<BackSpace>",quit)
-    window.wm_state("iconic")
+        hidden = False
+
+
 
 def setWindowDimensions(w,h): #This function sets the dimensions of the window
     window = Tk()
@@ -371,8 +385,8 @@ def moveBlueFood(): #This function moves blue "food" after the snake "eats" one
         blueFood = canvas.create_arc(0,0, snakeSize*2, snakeSize*2, fill="yellow")
     else:
         blueFood = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="blue")
-    blueFoodX = randint(0, width - snakeSize)
-    blueFoodY = randint(0, height - snakeSize)
+    blueFoodX = randint(0, width - snakeSize*2)
+    blueFoodY = randint(0, height - snakeSize*2)
     canvas.move(blueFood, blueFoodX, blueFoodY)
 #Works in a similar way to the "placeBlueFood" function
 
@@ -390,8 +404,8 @@ def moveRedFood(): #This function moves red "food" after the snake "eats" one
     else:
         redFood = canvas.create_oval(0,0, snakeSize, snakeSize, fill="red")
         newPoints = 20
-    redFoodX = randint(0, width - snakeSize)
-    redFoodY = randint(0, height - snakeSize)
+    redFoodX = randint(0, width - snakeSize*2)
+    redFoodY = randint(0, height - snakeSize*2)
     canvas.move(redFood, redFoodX, redFoodY)
 #Works in a similar way to the "placeRedFood" function
 
