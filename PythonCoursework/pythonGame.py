@@ -123,6 +123,7 @@ def newGame(difficulty, savedLength=0, savedScore=0):
     multiplier = 1
 
     placeBlueFood()
+    placeRedFood()
     moveSnake()
 
     window.mainloop() #updates the window screen
@@ -212,14 +213,19 @@ def customiseControls():
     while (downChoice in currentChoices) or (len(downChoice) > 1) or (downChoice not in possibleChoices):
         downChoice = input("That is not a valid entry. Please try again: ")
 
-def placeBlueFood(): #This function places "food" on the canvas
-    global blueFood, blueFoodX, blueFoodY, points #allows us to make changes to global variables "blueFood", "blueFoodX" and "blueFoodY"
+def placeBlueFood(): #This function places blue "food" on the canvas
+    global blueFood, blueFoodX, blueFoodY #allows us to make changes to global variables "blueFood", "blueFoodX" and "blueFoodY"
     blueFood = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="blue")
-    print(canvas.itemcget(blueFood, "fill"))
     blueFoodX = randint(0, width - snakeSize) #generates a random x coordinate where the food will be placed
     blueFoodY = randint(0, height - snakeSize) #generates a random y coordinate where the food will be placed
     canvas.move(blueFood, blueFoodX, blueFoodY) #places the food on the canvas in the coordinates that were generated
-    points = 10
+
+def placeRedFood(): #This function places red "food" on the canvas
+    global redFood, redFoodX, redFoodY #allows us to make changes to global variables "redFood", "redFoodX" and "redFoodY"
+    redFood = canvas.create_oval(0,0, snakeSize, snakeSize, fill="red")
+    redFoodX = randint(0, width - snakeSize) #generates a random x coordinate where the food will be placed
+    redFoodY = randint(0, height - snakeSize) #generates a random y coordinate where the food will be placed
+    canvas.move(redFood, redFoodX, redFoodY) #places the food on the canvas in the coordinates that were generated
 
 def leftKey(event): #This function is called when the user presses the key associated with moving left
     global direction #allows us to make changes to global variable "direction"
@@ -348,26 +354,46 @@ def growSnake(): #This function is used to grow the snake
     else:
         canvas.coords(snake[lastElement+1], lastElementPos[0], lastElementPos[1]-snakeSize, lastElementPos[2], lastElementPos[3]-snakeSize)
 #These selection statements move the snake on the canvas when different directions have been selected
-    global score, points, newPoints #allows us to make changes to global variable "score"
+    global score, points #allows us to make changes to global variables "score" and "points"
     score += (points * multiplier)
-    points = newPoints
     txt = "Score: " + str(score)
     canvas.itemconfigure(scoreText, text=txt) #updates the text on the canvas
 
-def moveBlueFood(): #This function moves "food" after the snake "eats" one
-    global blueFood, blueFoodX, blueFoodY, newPoints
-    canvas.delete(blueFood) #clears the "food" that is currently on the canvas
+def moveBlueFood(): #This function moves blue "food" after the snake "eats" one
+    global blueFood, blueFoodX, blueFoodY, points
+    if canvas.itemcget(blueFood, "fill") == "blue":
+        points = 10
+    else:
+        points = 30
+    canvas.delete(blueFood) #clears the blue "food" that is currently on the canvas
     foodOption = randint(1, 10)
     if foodOption == 1:
-        blueFood = canvas.create_oval(0,0, snakeSize, snakeSize, fill="yellow")
-        newPoints = 30
+        blueFood = canvas.create_arc(0,0, snakeSize*2, snakeSize*2, fill="yellow")
     else:
         blueFood = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="blue")
-        newPoints = 10
     blueFoodX = randint(0, width - snakeSize)
     blueFoodY = randint(0, height - snakeSize)
     canvas.move(blueFood, blueFoodX, blueFoodY)
 #Works in a similar way to the "placeBlueFood" function
+
+def moveRedFood(): #This function moves red "food" after the snake "eats" one
+    global redFood, redFoodX, redFoodY, points
+    if canvas.itemcget(redFood, "fill") == "red":
+        points = 20
+    else:
+        points = 30
+    canvas.delete(redFood) #clears the red "food" that is currently on the canvas
+    foodOption = randint(1, 5)
+    if foodOption == 1:
+        redFood = canvas.create_arc(0,0, snakeSize*2, snakeSize*2, fill="yellow")
+        newPoints = 30
+    else:
+        redFood = canvas.create_oval(0,0, snakeSize, snakeSize, fill="red")
+        newPoints = 20
+    redFoodX = randint(0, width - snakeSize)
+    redFoodY = randint(0, height - snakeSize)
+    canvas.move(redFood, redFoodX, redFoodY)
+#Works in a similar way to the "placeRedFood" function
 
 def overlapping(a,b): #This function is used to check if the snake is overlapping with something
     if a[0] < b[2] and a[2] > b[0] and a[1] < b[3] and a[3] > b[1]:
@@ -401,8 +427,12 @@ def moveSnake(): #This function is used to move the snake
         canvas.move(snake[0], 0, snakeSize) #moves the snake down
     snakeHeadPos = canvas.coords(snake[0])
     blueFoodPos = canvas.coords(blueFood)
-    if overlapping(snakeHeadPos, blueFoodPos): #checks if the snake has collided with a food object
+    redFoodPos = canvas.coords(redFood)
+    if overlapping(snakeHeadPos, blueFoodPos): #checks if the snake has collided with a blue food object
         moveBlueFood()
+        growSnake()
+    if overlapping(snakeHeadPos, redFoodPos): #checks if the snake has collided with a red food object
+        moveRedFood()
         growSnake()
     for i in range(1,len(snake)):
         if overlapping(snakeHeadPos, canvas. coords(snake[i])): #checks if the snake has collided with itself
@@ -410,7 +440,9 @@ def moveSnake(): #This function is used to move the snake
             updateLeaderboard()
             canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Game Over! Press backspace to quit.")
             canvas.bind("<BackSpace>",quit)
+            canvas.unbind("<space>")
 #gameOver is set to true and a message is outputted to the screen telling the user "Game Over!"
+#the leaderboard is updated and the relevant keys are binded/unbinded
     for i in range(1,len(snake)):
         positions.append(canvas.coords(snake[i]))
     for i in range(len(snake) - 1):
