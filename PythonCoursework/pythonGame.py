@@ -64,39 +64,43 @@ def loadGame():
         saveFileData = file.readlines()
     saveFileData = [line.rstrip("\n") for line in open("saveFile.txt")]
     file.close()
-    for index in range(len(saveFileData)):
-        if saveFileData[index] == player:
+#stores the contents of the save file in a list
+    for index in range(len(saveFileData)): #checks each item in the list
+        if saveFileData[index] == player: #if the current item in the list is the name of the player that was entered (i.e. the player exists)
             found = True
             newGame(str(saveFileData[index+1]),int(saveFileData[index+2]),int(saveFileData[index+3]))
+#set found to True and create a new game with the details of the player that were saved
     if "found" not in locals():
         print("\nThere does not appear to be a save file for that player")
+#if the player can't be found in the list then an appropriate error message is outputted
 
 def newGame(difficulty, savedLength=0, savedScore=0):
     global window, canvas, currentDifficulty, snake, snakeSize, snakeSpeed, score, scoreText, direction, paused, hidden, multiplier
-    window = setWindowDimensions(width, height)
-    canvas = Canvas(window, bg="black", width=width, height=height)
+    window = setWindowDimensions(width, height) #sets up the window
+    canvas = Canvas(window, bg="black", width=width, height=height) #creates a canvas which we will use for the background and shapes
     paused = False
     hidden = False
 
-    if difficulty == "1":
+    if difficulty == "1": #sets up game mode 1 (easy)
         snakeSize = 100
         snakeSpeed = 150
         background = PhotoImage(file="background1.png")#source: https://pixabay.com/illustrations/forest-trees-fog-silhouette-mist-5855196/
-    elif difficulty == "2":
+    elif difficulty == "2": #sets up game mode 2 (medium)
         snakeSize = 80
         snakeSpeed = 100
         background = PhotoImage(file="background2.png")#source: https://pixabay.com/vectors/mountains-panorama-forest-mountain-1412683/
-    elif difficulty == "3":
+    elif difficulty == "3": #sets up game mode 3 (hard)
         snakeSize = 40
         snakeSpeed = 50
         background = PhotoImage(file="background3.png")#source: https://pixabay.com/illustrations/trees-lake-forest-river-sky-beach-6207925/
     currentDifficulty = difficulty
 
-    canvas.create_image(width/2,height/2, image=background)
+    canvas.create_image(width/2,height/2, image=background) #creates the background
     snake = []
-    snake.append(canvas.create_rectangle(snakeSize,snakeSize, snakeSize * 2, snakeSize * 2, fill="green"))
+    snake.append(canvas.create_rectangle(snakeSize,snakeSize, snakeSize * 2, snakeSize * 2, fill="green")) #this represents the snake's head
     for i in range(savedLength - 1):
         snake.append(canvas.create_rectangle(0, 0, snakeSize, snakeSize, fill="light green"))
+#if the user has loaded a previous game then this code sets the snake to the correct length
     score = savedScore
     txt = "Score: " + str(score)
     scoreText = canvas.create_text( width/2 , 40 , fill="white" , font="Times 40 italic bold", text=txt)
@@ -135,15 +139,18 @@ def chooseLeaderboard():
     print("2.Medium")
     print("3.Hard")
     leaderboardChoice = input("Enter a number between 1 and 3: ")
+#Allows the user to choose which game mode they would like to view the leaderboard of
     if leaderboardChoice == "1":
         viewLeaderboard(fileReader("easyScores.txt"))
     elif leaderboardChoice == "2":
         viewLeaderboard(fileReader("mediumScores.txt"))
     elif leaderboardChoice == "3":
         viewLeaderboard(fileReader("hardScores.txt"))
+#The selection statement is used to determine which text file will be read from
     else:
         print("That is not a valid choice. Try again.")
         chooseLeaderboard()
+#I have made use of recursion so that if the user does not enter a valid choice they will be given the chance to do so again
 
 def viewLeaderboard(playerScores): #This function allows the user to view the leaderboard
     if len(playerScores) > 0:
@@ -168,7 +175,7 @@ def viewLeaderboard(playerScores): #This function allows the user to view the le
 #I have added validation for this option because if the "playerScores" list is empty then the user
 #will not be able to view the leaderboard
 
-def updateLeaderboard():
+def updateLeaderboard(): #This function is used to update the leaderboard after the user has played a game
     leaderboardFileData = list()
     if currentDifficulty == "1":
         leaderboardFile = "easyScores.txt"
@@ -180,22 +187,23 @@ def updateLeaderboard():
         leaderboardFileData = file.readlines()
     leaderboardFileData = [line.rstrip("\n") for line in open(leaderboardFile)]
     file.close()
-    for index in range(len(leaderboardFileData)):
-        if leaderboardFileData[index] == player:
-            if int(leaderboardFileData[index + 1]) < score:
-                leaderboardFileData[index + 1] = score
+#opens the specified text file and stores its contents in a list
+    for index in range(len(leaderboardFileData)): #checks each item in the list
+        if leaderboardFileData[index] == player: #if the player already exists
+            if int(leaderboardFileData[index + 1]) < score: #and their new score is greater than their previous score
+                leaderboardFileData[index + 1] = score #their score will be updated
             found = True
-    if "found" not in locals():
+    if "found" not in locals(): #if the player does not already exist their details will be added to the end of the list
         leaderboardFileData.append(player)
         leaderboardFileData.append(score)
-    with open (leaderboardFile, "w") as file:
+    with open (leaderboardFile, "w") as file: #writes the contents of the list to the relevant text file
         for item in leaderboardFileData:
             file.write("%s\n" % item)
 
 def customiseControls():
     global leftChoice, rightChoice, upChoice, downChoice
     currentChoices = []
-    possibleChoices = "abcdefghijklmnopqrstuvwxyz"
+    possibleChoices = "abcdefghijklmnopqrstuvwxyz" #these are the characters that the user can choose from
     print("\nThe default controls for this game are the arrow keys")
     print("Please choose a secondary key (letter) for each direction")
     leftChoice = input("Enter the key you will use to turn left: ")
@@ -213,6 +221,9 @@ def customiseControls():
     downChoice = input("Enter the key you will use to go down: ")
     while (downChoice in currentChoices) or (len(downChoice) > 1) or (downChoice not in possibleChoices):
         downChoice = input("That is not a valid entry. Please try again: ")
+#the user will be asked to enter a key for each direction. If they enter a key more than once, or they enter more than
+#one key, or they enter a key that is not a letter, then they will be told that this is not a valid entry and they will
+#have to enter something else
 
 def placeBlueFood(): #This function places blue "food" on the canvas
     global blueFood, blueFoodX, blueFoodY #allows us to make changes to global variables "blueFood", "blueFoodX" and "blueFoodY"
@@ -324,22 +335,22 @@ def quit(event):
 
 def bossKey(event):
     global paused, pauseText, hidden, hideScreen, hideScreenText #allows us to make changes to global variables "paused", "pauseText", "hidden", "hideScreen" and "hideScreenText"
-    if hidden == False:
+    if hidden == False: #if the boss key screen is not showing
         if paused == False:
             paused = True
             pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
-        hideScreen = canvas.create_rectangle(0,0,width,height,fill="white")
-        hideScreenText = canvas.create_text(width/2,height/2,fill="black",font="Times 40 italic bold",text="Loading...")
-        window.title("")
-        window.update()
+            canvas.bind("<Return>",save)
+            canvas.bind("<BackSpace>",quit)
+#This block of code pauses the game so that it is not running while the boss key screen is obscuring the user's view
+        hideScreen = canvas.create_rectangle(0,0,width,height,fill="white") #creates a white screen that covers the game screen
+        hideScreenText = canvas.create_text(width/2,height/2,fill="black",font="Times 40 italic bold",text="Loading...") #creates text to give the impression that the user is waiting for a page to load
+        window.title("") #changes the title of the window to ""
         hidden = True
         paused = True
-    else:
-        canvas.delete(hideScreen)
-        canvas.delete(hideScreenText)
-        window.title("Snake Game")
-        canvas.bind("<Return>",save)
-        canvas.bind("<BackSpace>",quit)
+    else: #if the boss key screen is showing
+        canvas.delete(hideScreen) #the screen block will be deleted
+        canvas.delete(hideScreenText) #the loading text will be deleted
+        window.title("Snake Game") #the title of the window will be changed to "Snake Game"
         hidden = False
 
 
