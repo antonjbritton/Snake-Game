@@ -18,9 +18,10 @@ def mainMenu(): #This functions acts as the main menu of my game
     print("2.Load Game")
     print("3.Leaderboard")
     print("4.Customise Controls")
-    print("5.Quit")
-    choice = input("Enter a number between 1 and 5: ")
-# depending on which number the user inputs (1-5) they will be redirected to another part of my program
+    print("5.Instructions")
+    print("6.Quit")
+    choice = input("Enter a number between 1 and 6: ")
+# depending on which number the user inputs (1-6) they will be redirected to another part of my program
     if choice == "1":
         global player
         player = input("\nPlease enter your player name: ")
@@ -34,6 +35,8 @@ def mainMenu(): #This functions acts as the main menu of my game
     elif choice == "4":
         customiseControls()
     elif choice == "5":
+        instructions()
+    elif choice == "6":
         exit()
     else:
         print("That is not a valid choice. Try again.")
@@ -225,6 +228,39 @@ def customiseControls():
 #one key, or they enter a key that is not a letter, then they will be told that this is not a valid entry and they will
 #have to enter something else
 
+def instructions():
+    print("\nMoving the snake:")
+    print("The default direction controls for this game are the arrow keys.")
+    print("You can add secondary controls by choosing the customise controls option from the main menu.")
+    print("\nCheat codes:")
+    print("123 - Shrinks the snake")
+    print("456 - Grows the snake")
+    print("789 - Activates/deactivates double points")
+    print("\nNavigation:")
+    print("Press the space bar to pause/resume the game.")
+    print("From a pause menu, press enter to save the current game.")
+    print("From a pause menu or game over screen, press 0 to restart.")
+    print("From a pause menu or game over screen, press backspace to quit.")
+    print("\nBoss Key:")
+    print("Press escape to bring up a fake loading page.")
+    print("\nDifficulties:")
+    print("There are 3 difficulties - easy. medium, hard.")
+    print("You can choose from these when you select the new game option.")
+    print("\nLeaderboard:")
+    print("From the main menu, you can choose to view a leaderboard.")
+    print("If you choose this option, you will be required to enter which game mode you would like to view.")
+    print("Each leaderboard contains the names and scores of previous players.")
+    print("These will be in order of score (highest to lowest).")
+    print("\nLoad Game:")
+    print("If you choose the load game option, you will be able to load a previous save file.")
+    print("\nFood:")
+    print("Eating a blue food object will give you 10 points (20 if double points is activated).")
+    print("Eating a red food object will give you 20 points (40 if double points is activated).")
+    print("When a blue food object is eaten, there is a 10% chance that a yellow food object will spawn.")
+    print("When a red food object is eaten, there is a 20% chance that a yellow food object will spawn.")
+    print("Eating a yellow food object will give you 30 points (60 if double points is activated).")
+#This function outputs instructions to the user, telling them how to use my game
+
 def placeBlueFood(): #This function places blue "food" on the canvas
     global blueFood, blueFoodX, blueFoodY #allows us to make changes to global variables "blueFood", "blueFoodX" and "blueFoodY"
     blueFood = canvas.create_rectangle(0,0, snakeSize, snakeSize, fill="blue")
@@ -291,15 +327,17 @@ def pause(event):
     global paused, pauseText #allows us to make changes to global variables "paused" and "pauseText"
     if paused == False:
         paused = True
-        pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
+        pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress 0 to restart the game\nPress backspace to quit the game")
         canvas.bind("<Return>",save)
         canvas.bind("<BackSpace>",quit)
+        canvas.bind("0",restart)
 #This block of code is used to "pause" the game
     else:
         paused = False
         canvas.delete(pauseText)
         canvas.unbind("<Return>")
         canvas.unbind("<BackSpace>")
+        canvas.unbind("0")
         moveSnake()
 #This block of code is used to "unpause" the game
 
@@ -338,9 +376,10 @@ def bossKey(event):
     if hidden == False: #if the boss key screen is not showing
         if paused == False:
             paused = True
-            pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress backspace to quit the game")
+            pauseText = canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Press space bar to resume the game\nPress enter to save the game\nPress 0 to restart the game\nPress backspace to quit the game")
             canvas.bind("<Return>",save)
             canvas.bind("<BackSpace>",quit)
+            canvas.bind("0",restart)
 #This block of code pauses the game so that it is not running while the boss key screen is obscuring the user's view
         hideScreen = canvas.create_rectangle(0,0,width,height,fill="white") #creates a white screen that covers the game screen
         hideScreenText = canvas.create_text(width/2,height/2,fill="black",font="Times 40 italic bold",text="Loading...") #creates text to give the impression that the user is waiting for a page to load
@@ -353,7 +392,9 @@ def bossKey(event):
         window.title("Snake Game") #the title of the window will be changed to "Snake Game"
         hidden = False
 
-
+def restart(event): #This function closes quits the current game and creates a new one (i.e. restarts the game)
+    window.destroy()
+    newGame(currentDifficulty, 0, 0)
 
 def setWindowDimensions(w,h): #This function sets the dimensions of the window
     window = Tk()
@@ -463,8 +504,9 @@ def moveSnake(): #This function is used to move the snake
         if overlapping(snakeHeadPos, canvas. coords(snake[i])): #checks if the snake has collided with itself
             gameOver = True
             updateLeaderboard()
-            canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Game Over! Press backspace to quit.")
-            canvas.bind("<BackSpace>",quit)
+            canvas.create_text(width/2,height/2,fill="white",font="Times 40 italic bold", text="Game Over!\nPress 0 to restart\nPress backspace to quit")
+            canvas.bind("<BackSpace>", quit)
+            canvas.bind("0", restart)
             canvas.unbind("<space>")
 #gameOver is set to true and a message is outputted to the screen telling the user "Game Over!"
 #the leaderboard is updated and the relevant keys are binded/unbinded
